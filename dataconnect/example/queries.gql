@@ -1,0 +1,89 @@
+query GetUser @auth(level: USER) {
+  user(key: {id_expr: "auth.uid"}) {
+    email
+    fullName
+  }
+}
+
+query ListEvents @auth(level: PUBLIC, insecureReason: "Events are public.") {
+  events {
+    title
+    location
+    startTime
+    ticketPrice
+  }
+}
+
+mutation CreateBooking($eventId: UUID!, $amount: Float!) @auth(level: USER) {
+  booking_insert(data: {
+    userId_expr: "auth.uid",
+    eventId: $eventId,
+    totalAmount: $amount,
+    paymentStatus: "PENDING",
+    transactionDate_expr: "request.time"
+  })
+}
+
+mutation UpdateBookingStatus($bookingId: UUID!, $status: String!) @auth(level: USER) {
+  booking_update(id: $bookingId, data: {paymentStatus: $status})
+}
+
+mutation DeleteBooking($bookingId: UUID!) @auth(level: USER) {
+  booking_delete(id: $bookingId)
+}
+
+mutation CreateReview($eventId: UUID!, $rating: Int!, $comment: String!) @auth(level: USER) {
+  review_insert(data: {
+    userId_expr: "auth.uid",
+    eventId: $eventId,
+    rating: $rating,
+    comment: $comment
+  })
+}
+
+mutation UpdateReview($reviewId: UUID!, $rating: Int!, $comment: String!) @auth(level: USER) {
+  review_update(id: $reviewId, data: {rating: $rating, comment: $comment})
+}
+
+mutation DeleteReview($reviewId: UUID!) @auth(level: USER) {
+  review_delete(id: $reviewId)
+}
+
+mutation CreateTicket($eventId: UUID!, $token: String!) @auth(level: USER) {
+  ticket_insert(data: {
+    attendeeId_expr: "auth.uid",
+    eventId: $eventId,
+    qrCodeToken: $token,
+    status: "VALID",
+    purchaseDate_expr: "request.time"
+  })
+}
+
+mutation UpdateTicketStatus($ticketId: UUID!, $status: String!) @auth(level: USER) {
+  ticket_update(id: $ticketId, data: {status: $status})
+}
+
+mutation DeleteTicket($ticketId: UUID!) @auth(level: USER) {
+  ticket_delete(id: $ticketId)
+}
+
+mutation CreateEvent($title: String!, $desc: String!, $loc: String!, $start: Timestamp!, $end: Timestamp!, $price: Float!, $cap: Int!) @auth(level: USER) {
+  event_insert(data: {
+    organizerId_expr: "auth.uid",
+    title: $title,
+    description: $desc,
+    location: $loc,
+    startTime: $start,
+    endTime: $end,
+    ticketPrice: $price,
+    totalCapacity: $cap
+  })
+}
+
+mutation UpdateEvent($eventId: UUID!, $title: String) @auth(level: USER) {
+  event_update(id: $eventId, data: {title: $title})
+}
+
+mutation DeleteEvent($eventId: UUID!) @auth(level: USER) {
+  event_delete(id: $eventId)
+}

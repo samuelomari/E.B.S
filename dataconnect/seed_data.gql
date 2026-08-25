@@ -1,0 +1,83 @@
+mutation SeedDatabase @transaction {
+  user_insertMany(data: [
+    {
+      id: "770e8400-e29b-41d4-a716-446655440001",
+      email: "alice@example.com",
+      fullName: "Alice Smith",
+      role: "ORGANIZER"
+    },
+    {
+      id: "770e8400-e29b-41d4-a716-446655440002",
+      email: "bob@example.com",
+      fullName: "Bob Jones",
+      role: "ATTENDEE"
+    },
+    {
+      id: "770e8400-e29b-41d4-a716-446655440003",
+      email: "charlie@example.com",
+      fullName: "Charlie Brown",
+      role: "ATTENDEE"
+    }
+  ])
+  
+  event_insertMany(data: [
+    {
+      id: "880e8400-e29b-41d4-a716-557766550001",
+      title: "Music Festival",
+      description: "Annual music festival",
+      location: "Central Park",
+      startTime: "2024-06-01T10:00:00Z",
+      endTime: "2024-06-01T22:00:00Z",
+      ticketPrice: 50.0,
+      totalCapacity: 5000,
+      organizer: { id: "770e8400-e29b-41d4-a716-446655440001" }
+    },
+    {
+      id: "880e8400-e29b-41d4-a716-557766550002",
+      title: "Tech Workshop",
+      description: "Learn FDC",
+      location: "San Francisco",
+      startTime: "2024-07-15T09:00:00Z",
+      endTime: "2024-07-15T17:00:00Z",
+      ticketPrice: 200.0,
+      totalCapacity: 50,
+      organizer: { id: "770e8400-e29b-41d4-a716-446655440001" }
+    }
+  ])
+
+  ticket_insertMany(data: [
+    {
+      purchaseDate: "2024-05-01T12:00:00Z",
+      status: "CONFIRMED",
+      qrCodeToken: "TOKEN123",
+      attendee: { id: "770e8400-e29b-41d4-a716-446655440002" },
+      event: { id: "880e8400-e29b-41d4-a716-557766550001" }
+    },
+    {
+      purchaseDate: "2024-05-02T13:00:00Z",
+      status: "PENDING",
+      qrCodeToken: "TOKEN456",
+      attendee: { id: "770e8400-e29b-41d4-a716-446655440003" },
+      event: { id: "880e8400-e29b-41d4-a716-557766550002" }
+    }
+  ])
+
+  booking_insertMany(data: [
+    {
+      paymentStatus: "PAID",
+      totalAmount: 50.0,
+      transactionDate: "2024-05-01T12:00:00Z",
+      user: { id: "770e8400-e29b-41d4-a716-446655440002" },
+      event: { id: "880e8400-e29b-41d4-a716-557766550001" }
+    }
+  ])
+
+  review_insertMany(data: [
+    {
+      rating: 5,
+      comment: "Amazing event!",
+      user: { id: "770e8400-e29b-41d4-a716-446655440002" },
+      event: { id: "880e8400-e29b-41d4-a716-557766550001" }
+    }
+  ])
+}
