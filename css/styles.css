@@ -1,0 +1,22 @@
+body { font-family: 'Inter', sans-serif; }
+.glass-effect {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+.fade-in { animation: fadeIn 0.3s ease-in; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.slide-in { animation: slideIn 0.4s ease-out; }
+@keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+.ticket-pattern {
+    background-image: radial-gradient(circle at 20px 20px, transparent 10px, white 11px);
+    background-size: 40px 40px;
+}
+.barcode {
+    background: repeating-linear-gradient(90deg, #000 0px, #000 2px, transparent 2px, transparent 4px, #000 4px, #000 6px, transparent 6px, transparent 10px);
+    height: 40px;
+}
+.payment-method-card { transition: all 0.2s ease; }
+.payment-method-card:hover { transform: translateY(-2px); }
+.payment-method-card.active { border-color: #2563eb; background-color: #eff6ff; }
+.mpesa-active { border-color: #059669 !important; background-color: #ecfdf5 !important; }
+.paypal-active { border-color: #ea580c !important; background-color: #fff7ed !important; }
