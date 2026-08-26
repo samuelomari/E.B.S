@@ -1,60 +1,48 @@
         const UI = {
             currentPaymentMethod: 'card',
-            
-            init: () => {
-                if (Store.currentUser) {
-                    document.getElementById('navbar').classList.remove('hidden');
-                    UI.updateNav();
-                    Router.navigate('dashboard');
-                } else {
+
+            toggleDarkMode: () => {
+                const enabled = document.body.classList.toggle('dark-mode');
+                localStorage.setItem('eventbooking-theme', enabled ? 'dark' : 'light');
+                UI.updateThemeToggle();
+            },
+
+            updateThemeToggle: () => {
+                const toggle = document.getElementById('theme-toggle');
+                if (!toggle) return;
+                const darkMode = document.body.classList.contains('dark-mode');
+                toggle.innerHTML = `<i class="fas fa-${darkMode ? 'sun' : 'moon'}"></i>`;
+                toggle.setAttribute('aria-label', darkMode ? 'Switch to light mode' : 'Switch to dark mode');
+                toggle.title = darkMode ? 'Switch to light mode' : 'Switch to dark mode';
+            },
+
+            init: async () => {
+                if (localStorage.getItem('eventbooking-theme') === 'dark') document.body.classList.add('dark-mode');
+                UI.updateThemeToggle();
+                await Auth.restoreSession();
+                if (window.firebaseAuthError) {
+                    const errorCode = window.firebaseAuthError.code || 'unknown error';
+                    Utils.showToast(`Firebase sign-in failed: ${errorCode}`, 'error');
+                    window.firebaseAuthError = null;
+                }
+                if (!Store.currentUser) {
                     document.getElementById('navbar').classList.add('hidden');
                     Router.navigate('login');
+                    return;
                 }
+                document.getElementById('navbar').classList.remove('hidden');
+                UI.updateNav();
+                Router.navigate('dashboard');
             },
 
-            switchAuthTab: (tab) => {
-                document.getElementById('tab-login').className = tab === 'login' ? 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-white text-primary-700 shadow-sm' : 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-500 hover:text-gray-700';
-                document.getElementById('tab-register').className = tab === 'register' ? 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-white text-primary-700 shadow-sm' : 'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-500 hover:text-gray-700';
-                document.getElementById('login-form').classList.toggle('hidden', tab !== 'login');
-                document.getElementById('register-form').classList.toggle('hidden', tab !== 'register');
-            },
-
-            fillDemo: (type) => {
-                if (type === 'admin') {
-                    document.getElementById('login-email').value = 'samuelomari3941@gmail.com';
-                    document.getElementById('login-password').value = 'eventbooking';
-                } else {
-                    document.getElementById('login-email').value = 'john@example.com';
-                    document.getElementById('login-password').value = 'password123';
-                }
-            },
-
-            handleLogin: () => {
-                const email = document.getElementById('login-email').value;
-                const password = document.getElementById('login-password').value;
-                const result = Auth.login(email, password);
+            handleLogin: async () => {
+                const result = await Auth.login();
                 
                 if (result.success) {
                     Utils.showToast('Welcome back, ' + result.user.name + '!', 'success');
                     document.getElementById('navbar').classList.remove('hidden');
                     UI.updateNav();
                     Router.navigate(result.user.role === 'admin' ? 'admin' : 'dashboard');
-                } else {
-                    Utils.showToast(result.message, 'error');
-                }
-            },
-
-            handleRegister: () => {
-                const name = document.getElementById('reg-name').value;
-                const email = document.getElementById('reg-email').value;
-                const password = document.getElementById('reg-password').value;
-                const result = Auth.register(name, email, password);
-                
-                if (result.success) {
-                    Utils.showToast('Account created successfully!', 'success');
-                    document.getElementById('navbar').classList.remove('hidden');
-                    UI.updateNav();
-                    Router.navigate('dashboard');
                 } else {
                     Utils.showToast(result.message, 'error');
                 }
@@ -276,6 +264,21 @@
                         date: new Date().toISOString().split('T')[0],
                         status: 'confirmed'
                     });
+
+                    if (window.firebaseSendPurchaseEmail) {
+                        try {
+                            await window.firebaseSendPurchaseEmail({
+                                eventTitle: event.title,
+                                ticketId,
+                                quantity,
+                                total,
+                                paymentMethod: method,
+                                purchaseDate: new Date().toISOString().split('T')[0]
+                            });
+                        } catch (emailError) {
+                            console.error('Purchase confirmation email failed:', emailError);
+                        }
+                    }
                     
                     UI.closePaymentModal();
                     

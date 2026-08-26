@@ -1,9 +1,54 @@
-body { font-family: 'Inter', sans-serif; }
+:root {
+    --page-bg: #f6f8fb;
+    --surface: #ffffff;
+    --surface-muted: #f1f5f9;
+    --border: #e2e8f0;
+    --text: #172033;
+    --text-muted: #64748b;
+    --accent: #2563eb;
+    --accent-soft: #eff6ff;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--page-bg);
+    color: var(--text);
+    transition: background-color 0.35s ease, color 0.35s ease;
+}
+.theme-toggle {
+    position: fixed;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    z-index: 60;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text-muted);
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.14);
+    transition: transform 0.2s ease, background-color 0.35s ease, color 0.35s ease;
+}
+.theme-toggle:hover { transform: translateY(-3px) rotate(-8deg); color: var(--accent); }
+.dark-mode { --page-bg: #0f172a; --surface: #172033; --surface-muted: #1e293b; --border: #334155; --text: #e2e8f0; --text-muted: #94a3b8; --accent-soft: #1e3a8a; }
+.dark-mode .bg-gray-50, .dark-mode .bg-gray-100 { background-color: var(--surface-muted) !important; }
+.dark-mode .bg-white { background-color: var(--surface) !important; }
+.dark-mode .text-gray-900, .dark-mode .text-gray-800, .dark-mode .text-gray-700 { color: var(--text) !important; }
+.dark-mode .text-gray-600, .dark-mode .text-gray-500, .dark-mode .text-gray-400 { color: var(--text-muted) !important; }
+.dark-mode .border-gray-100, .dark-mode .border-gray-200, .dark-mode .border-gray-300 { border-color: var(--border) !important; }
+.dark-mode input, .dark-mode textarea, .dark-mode select { background: var(--surface-muted); color: var(--text); border-color: var(--border); }
+.dark-mode input::placeholder, .dark-mode textarea::placeholder { color: #64748b; }
+.dark-mode .glass-effect { background: rgba(23, 32, 51, 0.94); }
+.dark-mode .ticket-pattern { background-image: radial-gradient(circle at 20px 20px, transparent 10px, var(--surface) 11px); }
+.dark-mode .barcode { background-color: #e2e8f0; }
+.dark-mode .theme-toggle { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35); }
 .glass-effect {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
 }
-.fade-in { animation: fadeIn 0.3s ease-in; }
+.fade-in { animation: fadeIn 0.45s ease-out both; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .slide-in { animation: slideIn 0.4s ease-out; }
 @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -20,3 +65,9 @@ body { font-family: 'Inter', sans-serif; }
 .payment-method-card.active { border-color: #2563eb; background-color: #eff6ff; }
 .mpesa-active { border-color: #059669 !important; background-color: #ecfdf5 !important; }
 .paypal-active { border-color: #ea580c !important; background-color: #fff7ed !important; }
+.route-enter { animation: routeEnter 0.42s ease-out both; }
+@keyframes routeEnter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+button, a, input, textarea, select { transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}

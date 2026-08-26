@@ -64,6 +64,9 @@
                         app.innerHTML = Components.Login();
                 }
                 
+                app.classList.remove('route-enter');
+                void app.offsetWidth;
+                app.classList.add('route-enter');
                 window.scrollTo(0, 0);
             }
         };

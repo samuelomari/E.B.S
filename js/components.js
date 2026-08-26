@@ -7,71 +7,16 @@
                                 <i class="fas fa-ticket-alt text-white text-2xl"></i>
                             </div>
                             <h2 class="text-3xl font-extrabold text-gray-900">Welcome back</h2>
-                            <p class="mt-2 text-sm text-gray-600">Sign in to your account or create a new one</p>
-                        </div>
-                        
-                        <div class="flex rounded-lg bg-gray-100 p-1 mb-6">
-                            <button id="tab-login" onclick="UI.switchAuthTab('login')" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all bg-white text-primary-700 shadow-sm">Sign In</button>
-                            <button id="tab-register" onclick="UI.switchAuthTab('register')" class="flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all text-gray-500 hover:text-gray-700">Sign Up</button>
+                            <p class="mt-2 text-sm text-gray-600">Sign in with a verified Gmail account to continue</p>
                         </div>
 
                         <form id="login-form" class="space-y-6" onsubmit="event.preventDefault(); UI.handleLogin();">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Email address</label>
-                                <input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="admin@example.com">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Password</label>
-                                <input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="••••••••">
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center">
-                                    <input type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded">
-                                    <label class="ml-2 block text-sm text-gray-900">Remember me</label>
-                                </div>
-                                <a href="#" class="text-sm font-medium text-primary-600 hover:text-primary-500">Forgot password?</a>
-                            </div>
-                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                                Sign in
+                                <button type="submit" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                                    <i class="fab fa-google text-red-500"></i>
+                                    Continue with Google
                             </button>
+                                <p class="text-center text-xs text-gray-500">Only verified @gmail.com accounts are allowed.</p>
                         </form>
-
-                        <form id="register-form" class="space-y-6 hidden" onsubmit="event.preventDefault(); UI.handleRegister();">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Full Name</label>
-                                <input type="text" id="reg-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="John Doe">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Email address</label>
-                                <input type="email" id="reg-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="john@example.com">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Password</label>
-                                <input type="password" id="reg-password" required minlength="6" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 sm:text-sm" placeholder="Min 6 characters">
-                            </div>
-                            <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                                Create Account
-                            </button>
-                        </form>
-
-                        <div class="mt-6">
-                            <div class="relative">
-                                <div class="absolute inset-0 flex items-center">
-                                    <div class="w-full border-t border-gray-300"></div>
-                                </div>
-                                <div class="relative flex justify-center text-sm">
-                                    <span class="px-2 bg-white text-gray-500">Demo credentials</span>
-                                </div>
-                            </div>
-                            <div class="mt-4 grid grid-cols-2 gap-3">
-                                <button onclick="UI.fillDemo('admin')" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-user-shield mr-2 text-primary-600"></i> Admin
-                                </button>
-                                <button onclick="UI.fillDemo('user')" class="flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-user mr-2 text-green-600"></i> User
-                                </button>
-                            </div>
-                        </div>
                     </div>
                 </div>
             `,
@@ -151,7 +96,7 @@
                                                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onclick="Router.navigate('ticket-detail', {ticketId: '${ticket.id}'})">
                                                     <div class="flex flex-col sm:flex-row">
                                                         <div class="sm:w-48 h-32 sm:h-auto relative">
-                                                            <img src="${event.image}" class="w-full h-full object-cover" alt="${event.title}">
+                                                            <img src="${event.image}" loading="lazy" decoding="async" class="w-full h-full object-cover" alt="${event.title}">
                                                             <div class="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded-md text-xs font-semibold text-gray-800">
                                                                 ${event.category}
                                                             </div>
@@ -192,7 +137,7 @@
                                     ${upcomingEvents.map(event => `
                                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow cursor-pointer" onclick="Router.navigate('event-detail', {eventId: ${event.id}})">
                                             <div class="relative h-32">
-                                                <img src="${event.image}" class="w-full h-full object-cover" alt="${event.title}">
+                                                <img src="${event.image}" loading="lazy" decoding="async" class="w-full h-full object-cover" alt="${event.title}">
                                                 <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-3">
                                                     <p class="text-white font-semibold text-sm line-clamp-1">${event.title}</p>
                                                 </div>
@@ -232,7 +177,7 @@
                             ${Store.events.filter(e => e.status === 'active').map(event => `
                                 <div class="event-card bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group" data-category="${event.category}">
                                     <div class="relative h-48 overflow-hidden">
-                                        <img src="${event.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${event.title}">
+                                        <img src="${event.image}" loading="lazy" decoding="async" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="${event.title}">
                                         <div class="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-primary-700">
                                             ${event.category}
                                         </div>
@@ -800,7 +745,7 @@
                                                 <tr class="hover:bg-gray-50 transition-colors">
                                                     <td class="px-6 py-4 whitespace-nowrap">
                                                         <div class="flex items-center">
-                                                            <img class="h-10 w-10 rounded-lg object-cover" src="${event.image}" alt="">
+                                                            <img class="h-10 w-10 rounded-lg object-cover" src="${event.image}" loading="lazy" decoding="async" alt="">
                                                             <div class="ml-4">
                                                                 <div class="text-sm font-medium text-gray-900">${event.title}</div>
                                                                 <div class="text-sm text-gray-500">${event.location}</div>
