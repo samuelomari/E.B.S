@@ -12,8 +12,12 @@
                         app.innerHTML = Components.Login();
                         break;
                     case 'dashboard':
-                        if (!Store.currentUser || Store.currentUser.role !== 'user') {
+                        if (!Store.currentUser) {
                             Router.navigate('login');
+                            return;
+                        }
+                        if (Store.currentUser.role === 'admin') {
+                            Router.navigate('admin');
                             return;
                         }
                         app.innerHTML = Components.UserDashboard();

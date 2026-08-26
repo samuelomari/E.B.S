@@ -8,28 +8,58 @@ const firebaseConfig = {
     measurementId: 'G-RHLMNT4NNF'
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const googleProvider = new firebase.auth.GoogleAuthProvider();
+let app = null;
+let auth = null;
+let googleProvider = null;
 
-window.firebaseApp = app;
-window.firebaseAuth = auth;
-window.firebaseFunctions = firebase.functions(app);
-window.firebaseSignInWithGoogle = () => auth.signInWithRedirect(googleProvider);
-window.firebaseSignOut = () => auth.signOut();
-window.firebaseSendWelcomeEmail = (name) => window.firebaseFunctions.httpsCallable('sendWelcomeEmail')({name});
-window.firebaseSendPurchaseEmail = (ticket) => window.firebaseFunctions.httpsCallable('sendPurchaseConfirmation')(ticket);
-const redirectResult = auth.getRedirectResult()
-    .then((result) => result.user || auth.currentUser)
-    .catch((error) => {
-        window.firebaseAuthError = error;
-        return auth.currentUser;
-    });
-window.firebaseAuthReady = Promise.race([
-    redirectResult,
-    new Promise((resolve) => setTimeout(() => resolve(auth.currentUser), 4000))
-]);
+try {
+    if (typeof firebase !== 'undefined') {
+        app = firebase.apps && firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+        auth = firebase.auth();
+        googleProvider = new firebase.auth.GoogleAuthProvider();
 
-firebase.analytics.isSupported().then((supported) => {
-    if (supported) window.firebaseAnalytics = firebase.analytics();
-});
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseFunctions = firebase.functions(app);
+        window.firebaseSignInWithGoogle = () => auth.signInWithPopup(googleProvider);
+        window.firebaseSignOut = () => auth.signOut();
+        window.firebaseSendWelcomeEmail = (name) => window.firebaseFunctions.httpsCallable('sendWelcomeEmail')({name});
+        window.firebaseSendPurchaseEmail = (ticket) => window.firebaseFunctions.httpsCallable('sendPurchaseConfirmation')(ticket);
+
+        window.firebaseAuthReady = new Promise((resolve) => {
+            let unsubscribed = false;
+            const timeout = setTimeout(() => {
+                if (!unsubscribed) {
+                    resolve(auth.currentUser);
+                }
+            }, 3000);
+
+            const unsubscribe = auth.onAuthStateChanged(
+                (user) => {
+                    unsubscribed = true;
+                    clearTimeout(timeout);
+                    unsubscribe();
+                    resolve(user);
+                },
+                (error) => {
+                    unsubscribed = true;
+                    clearTimeout(timeout);
+                    window.firebaseAuthError = error;
+                    resolve(null);
+                }
+            );
+        });
+
+        if (firebase.analytics && firebase.analytics.isSupported) {
+            firebase.analytics.isSupported().then((supported) => {
+                if (supported) window.firebaseAnalytics = firebase.analytics();
+            }).catch(() => {});
+        }
+    } else {
+        window.firebaseAuthReady = Promise.resolve(null);
+    }
+} catch (e) {
+    console.warn('Firebase initialization warning:', e);
+    window.firebaseAuthError = e;
+    window.firebaseAuthReady = Promise.resolve(null);
+}

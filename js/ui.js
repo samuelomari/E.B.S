@@ -17,22 +17,29 @@
             },
 
             init: async () => {
-                if (localStorage.getItem('eventbooking-theme') === 'dark') document.body.classList.add('dark-mode');
-                UI.updateThemeToggle();
-                await Auth.restoreSession();
-                if (window.firebaseAuthError) {
-                    const errorCode = window.firebaseAuthError.code || 'unknown error';
-                    Utils.showToast(`Firebase sign-in failed: ${errorCode}`, 'error');
-                    window.firebaseAuthError = null;
-                }
-                if (!Store.currentUser) {
-                    document.getElementById('navbar').classList.add('hidden');
+                try {
+                    if (localStorage.getItem('eventbooking-theme') === 'dark') document.body.classList.add('dark-mode');
+                    UI.updateThemeToggle();
+                    await Auth.restoreSession();
+                    if (window.firebaseAuthError) {
+                        const errorCode = window.firebaseAuthError.code || 'initialization notice';
+                        console.warn(`Firebase notice: ${errorCode}`);
+                        window.firebaseAuthError = null;
+                    }
+                    if (!Store.currentUser) {
+                        const navbar = document.getElementById('navbar');
+                        if (navbar) navbar.classList.add('hidden');
+                        Router.navigate('login');
+                        return;
+                    }
+                    const navbar = document.getElementById('navbar');
+                    if (navbar) navbar.classList.remove('hidden');
+                    UI.updateNav();
+                    Router.navigate(Store.currentUser.role === 'admin' ? 'admin' : 'dashboard');
+                } catch (e) {
+                    console.error('UI init error:', e);
                     Router.navigate('login');
-                    return;
                 }
-                document.getElementById('navbar').classList.remove('hidden');
-                UI.updateNav();
-                Router.navigate('dashboard');
             },
 
             handleLogin: async () => {
@@ -40,11 +47,23 @@
                 
                 if (result.success) {
                     Utils.showToast('Welcome back, ' + result.user.name + '!', 'success');
-                    document.getElementById('navbar').classList.remove('hidden');
+                    const navbar = document.getElementById('navbar');
+                    if (navbar) navbar.classList.remove('hidden');
                     UI.updateNav();
                     Router.navigate(result.user.role === 'admin' ? 'admin' : 'dashboard');
                 } else {
                     Utils.showToast(result.message, 'error');
+                }
+            },
+
+            handleDemoLogin: (role) => {
+                const result = Auth.demoLogin(role);
+                if (result.success) {
+                    Utils.showToast(`Logged in as ${result.user.name} (${result.user.role})`, 'success');
+                    const navbar = document.getElementById('navbar');
+                    if (navbar) navbar.classList.remove('hidden');
+                    UI.updateNav();
+                    Router.navigate(result.user.role === 'admin' ? 'admin' : 'dashboard');
                 }
             },
 
