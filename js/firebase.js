@@ -25,6 +25,9 @@ try {
         window.firebaseSignOut = () => auth.signOut();
         window.firebaseSendWelcomeEmail = (name) => window.firebaseFunctions.httpsCallable('sendWelcomeEmail')({name});
         window.firebaseSendPurchaseEmail = (ticket) => window.firebaseFunctions.httpsCallable('sendPurchaseConfirmation')(ticket);
+        window.firebaseCreatePaypalOrder = (amount) => window.firebaseFunctions.httpsCallable('createPaypalOrder')({amount});
+        window.firebaseCapturePaypalOrder = (orderId) => window.firebaseFunctions.httpsCallable('capturePaypalOrder')({orderId});
+        window.firebaseInitiateMpesa = (amount, phone, reference) => window.firebaseFunctions.httpsCallable('initiateMpesaStkPush')({amount, phone, reference});
 
         window.firebaseAuthReady = new Promise((resolve) => {
             let unsubscribed = false;

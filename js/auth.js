@@ -12,9 +12,9 @@
                     }
 
                     const email = (firebaseUser.email || '').toLowerCase();
-                    if (firebaseUser.emailVerified === false || !email.endsWith('@gmail.com')) {
+                    if (firebaseUser.emailVerified === false) {
                         if (window.firebaseSignOut) await window.firebaseSignOut();
-                        return { success: false, message: 'Only verified Gmail accounts can access this application.' };
+                        return { success: false, message: 'Your Google account email must be verified.' };
                     }
 
                     Store.currentUser = {
@@ -77,7 +77,7 @@
                         if (!firebaseUser) return null;
 
                         const email = (firebaseUser.email || '').toLowerCase();
-                        if (firebaseUser.emailVerified === false || !email.endsWith('@gmail.com')) {
+                        if (firebaseUser.emailVerified === false) {
                             if (window.firebaseSignOut) await window.firebaseSignOut();
                             return null;
                         }

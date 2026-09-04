@@ -5,7 +5,7 @@ EventBooking is a browser-based ticket management system for discovering events,
 ## Current Experience
 
 - Firebase Google Authentication
-- Access restricted to verified Gmail accounts
+- Access restricted to verified Google accounts
 - User and admin navigation flows
 - Event discovery, filtering, and detail views
 - Card, PayPal, and M-Pesa payment flows
@@ -13,12 +13,12 @@ EventBooking is a browser-based ticket management system for discovering events,
 - Ticket IDs, QR-ready codes, booking records, and confirmation pages
 - Native lazy loading for repeated event images
 - Persistent light/dark mode
-- Animated route transitions with reduced-motion support
+- Direct route changes with reduced-motion support
 - Firebase Cloud Functions for welcome and purchase confirmation emails
 
 ## Screenshots
 
-The live website was reviewed at `http://127.0.0.1:5500/home.html` in both themes. The current authentication screen presents a dark/light adaptable card with a single **Continue with Google** action and the rule: only verified `@gmail.com` accounts are allowed. The theme control is available in the lower-right corner.
+The live website was reviewed at `http://127.0.0.1:5500/home.html` in both themes. The authentication screen uses a single **Continue with Google** action and accepts verified Google accounts. The theme control is available in the lower-right corner.
 
 ### Light Theme
 
@@ -55,9 +55,15 @@ To capture updated screenshots locally, open the site with Live Server and use t
 4. Add `127.0.0.1` and `localhost` to Firebase Authentication authorized domains.
 5. Enable Google under Firebase Authentication sign-in providers.
 
-## Email Configuration
+## Payment and Email Configuration
 
 Purchase and welcome emails are sent by Cloud Functions through Resend. Copy `functions/.env.example` to `functions/.env` and set a Resend API key and verified sender address. The `.env` file is ignored by Git.
+
+PayPal requires `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, `PAYPAL_BASE_URL`, and `PAYPAL_CURRENCY`. M-Pesa requires Daraja credentials, a shortcode, and a public `MPESA_CALLBACK_URL`. Deploy the callable functions and implement the provider approval/callback flow before issuing tickets in production. The browser no longer simulates either payment or marks an STK push as paid.
+
+## Hosting and domain
+
+`firebase.json` is configured for Firebase Hosting. Deploy with `firebase deploy --only hosting,functions`, then add your owned domain in Firebase Console under Hosting > Add custom domain and publish the DNS records Firebase provides. A domain cannot be assigned from source code without a domain name and DNS access.
 
 ```env
 RESEND_API_KEY=your_resend_api_key

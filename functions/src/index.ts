@@ -8,7 +8,8 @@
  */
 
 import {setGlobalOptions} from "firebase-functions";
-import {HttpsError, onCall} from "firebase-functions/v2/https";
+import {HttpsError, onCall, onRequest} from "firebase-functions/v2/https";
+import {defineSecret} from "firebase-functions/params";
 // import {onRequest} from "firebase-functions/https";
 // import * as logger from "firebase-functions/logger";
 
@@ -26,6 +27,104 @@ import {HttpsError, onCall} from "firebase-functions/v2/https";
 // In the v1 API, each function can only serve one request per container, so
 // this will be the maximum concurrent request count.
 setGlobalOptions({maxInstances: 10});
+
+const paypalClientId = defineSecret("PAYPAL_CLIENT_ID");
+const paypalClientSecret = defineSecret("PAYPAL_CLIENT_SECRET");
+const paypalBaseUrl = process.env.PAYPAL_BASE_URL || "https://api-m.sandbox.paypal.com";
+const paypalCurrency = process.env.PAYPAL_CURRENCY || "USD";
+const mpesaConsumerKey = defineSecret("MPESA_CONSUMER_KEY");
+const mpesaConsumerSecret = defineSecret("MPESA_CONSUMER_SECRET");
+const mpesaPasskey = defineSecret("MPESA_PASSKEY");
+const mpesaShortcode = defineSecret("MPESA_SHORTCODE");
+
+const requireAuth = (request: {auth?: {uid?: string}}) => {
+	if (!request.auth?.uid) throw new HttpsError("unauthenticated", "Sign in before starting a payment");
+};
+
+const paypalToken = async () => {
+	const credentials = Buffer.from(`${paypalClientId.value()}:${paypalClientSecret.value()}`).toString("base64");
+	const response = await fetch(`${paypalBaseUrl}/v1/oauth2/token`, {
+		method: "POST",
+		headers: {Authorization: `Basic ${credentials}`, "Content-Type": "application/x-www-form-urlencoded"},
+		body: "grant_type=client_credentials",
+	});
+	if (!response.ok) throw new Error(`PayPal authentication returned ${response.status}`);
+	const data = await response.json() as {access_token: string};
+	return data.access_token;
+};
+
+export const createPaypalOrder = onCall({secrets: [paypalClientId, paypalClientSecret]}, async (request) => {
+	requireAuth(request);
+	const amount = Number(request.data?.amount);
+	if (!Number.isFinite(amount) || amount <= 0) throw new HttpsError("invalid-argument", "A positive payment amount is required");
+	try {
+		const token = await paypalToken();
+		const response = await fetch(`${paypalBaseUrl}/v2/checkout/orders`, {
+			method: "POST",
+			headers: {Authorization: `Bearer ${token}`, "Content-Type": "application/json"},
+			body: JSON.stringify({intent: "CAPTURE", purchase_units: [{amount: {currency_code: paypalCurrency, value: amount.toFixed(2)}}]}),
+		});
+		if (!response.ok) throw new Error(`PayPal order returned ${response.status}`);
+		const data = await response.json() as {id: string};
+		return {orderId: data.id};
+	} catch (error) {
+		console.error("PayPal order creation failed", error);
+		throw new HttpsError("failed-precondition", "PayPal is not configured or is temporarily unavailable");
+	}
+});
+
+export const capturePaypalOrder = onCall({secrets: [paypalClientId, paypalClientSecret]}, async (request) => {
+	requireAuth(request);
+	const orderId = String(request.data?.orderId || "");
+	if (!orderId) throw new HttpsError("invalid-argument", "A PayPal order is required");
+	try {
+		const token = await paypalToken();
+		const response = await fetch(`${paypalBaseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {
+			method: "POST",
+			headers: {Authorization: `Bearer ${token}`, "Content-Type": "application/json"},
+		});
+		if (!response.ok) throw new Error(`PayPal capture returned ${response.status}`);
+		const data = await response.json() as {status: string; id: string};
+		return {success: data.status === "COMPLETED", transactionId: data.id, status: data.status};
+	} catch (error) {
+		console.error("PayPal capture failed", error);
+		throw new HttpsError("failed-precondition", "PayPal could not confirm this payment");
+	}
+});
+
+export const initiateMpesaStkPush = onCall({secrets: [mpesaConsumerKey, mpesaConsumerSecret, mpesaPasskey, mpesaShortcode]}, async (request) => {
+	requireAuth(request);
+	const phone = String(request.data?.phone || "").replace(/^\+/, "");
+	const amount = Math.round(Number(request.data?.amount));
+	if (!/^2547\d{8}$/.test(phone) || !Number.isFinite(amount) || amount < 1) {
+		throw new HttpsError("invalid-argument", "Enter a valid Kenyan M-Pesa number and amount");
+	}
+	try {
+		const basic = Buffer.from(`${mpesaConsumerKey.value()}:${mpesaConsumerSecret.value()}`).toString("base64");
+		const tokenResponse = await fetch("https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials", {headers: {Authorization: `Basic ${basic}`}});
+		if (!tokenResponse.ok) throw new Error(`M-Pesa token returned ${tokenResponse.status}`);
+		const tokenData = await tokenResponse.json() as {access_token: string};
+		const timestamp = new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+		const password = Buffer.from(`${mpesaShortcode.value()}${mpesaPasskey.value()}${timestamp}`).toString("base64");
+		const response = await fetch("https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest", {
+			method: "POST",
+			headers: {Authorization: `Bearer ${tokenData.access_token}`, "Content-Type": "application/json"},
+			body: JSON.stringify({BusinessShortCode: mpesaShortcode.value(), Password: password, Timestamp: timestamp, TransactionType: "CustomerPayBillOnline", Amount: amount, PartyA: phone, PartyB: mpesaShortcode.value(), PhoneNumber: phone, CallBackURL: process.env.MPESA_CALLBACK_URL, AccountReference: String(request.data?.reference || "EVENT"), TransactionDesc: "Event ticket"}),
+		});
+		if (!response.ok) throw new Error(`M-Pesa STK push returned ${response.status}`);
+		const data = await response.json() as {ResponseCode: string; CheckoutRequestID: string; CustomerMessage?: string};
+		if (data.ResponseCode !== "0") throw new Error(data.CustomerMessage || "M-Pesa rejected the request");
+		return {success: true, transactionId: data.CheckoutRequestID, message: "Check your phone and enter your M-Pesa PIN"};
+	} catch (error) {
+		console.error("M-Pesa STK push failed", error);
+		throw new HttpsError("failed-precondition", "M-Pesa is not configured or is temporarily unavailable");
+	}
+});
+
+export const mpesaCallback = onRequest((request, response) => {
+	console.log("M-Pesa callback received", request.body);
+	response.status(200).json({ResultCode: 0, ResultDesc: "Accepted"});
+});
 
 type PurchaseEmail = {
 	eventTitle: string;
@@ -54,8 +153,8 @@ const sendEmail = async (to: string, subject: string, text: string) => {
 
 export const sendWelcomeEmail = onCall(async (request) => {
 	const email = request.auth?.token.email?.toLowerCase();
-	if (!email || !email.endsWith("@gmail.com")) {
-		throw new HttpsError("permission-denied", "A verified Gmail account is required");
+	if (!email) {
+		throw new HttpsError("permission-denied", "A verified Google account is required");
 	}
 
 	await sendEmail(
@@ -69,8 +168,8 @@ export const sendWelcomeEmail = onCall(async (request) => {
 export const sendPurchaseConfirmation = onCall(async (request) => {
 	const data = request.data as PurchaseEmail;
 	const email = request.auth?.token.email?.toLowerCase();
-	if (!email || !email.endsWith("@gmail.com")) {
-		throw new HttpsError("permission-denied", "A verified Gmail account is required");
+	if (!email) {
+		throw new HttpsError("permission-denied", "A verified Google account is required");
 	}
 	if (!data.eventTitle || !data.ticketId || !data.quantity || !data.total) {
 		throw new HttpsError("invalid-argument", "Incomplete ticket details");

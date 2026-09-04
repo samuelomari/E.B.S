@@ -1,21 +1,21 @@
         const Components = {
             Login: () => `
-                <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 py-12 px-4 sm:px-6 lg:px-8">
-                    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl fade-in">
+                <div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-lg shadow-sm border border-gray-200 fade-in">
                         <div class="text-center">
                             <div class="mx-auto w-16 h-16 bg-primary-600 rounded-2xl flex items-center justify-center mb-4">
                                 <i class="fas fa-ticket-alt text-white text-2xl"></i>
                             </div>
                             <h2 class="text-3xl font-extrabold text-gray-900">Welcome back</h2>
-                            <p class="mt-2 text-sm text-gray-600">Sign in with a verified Gmail account to continue</p>
+                            <p class="mt-2 text-sm text-gray-600">Sign in with your verified Google account</p>
                         </div>
 
                         <form id="login-form" class="space-y-6" onsubmit="event.preventDefault(); UI.handleLogin();">
-                            <button type="submit" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                            <button type="submit" class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                                 <i class="fab fa-google text-red-500"></i>
                                 Continue with Google
                             </button>
-                            <p class="text-center text-xs text-gray-500">Only verified @gmail.com accounts are allowed.</p>
+                            <p class="text-center text-xs text-gray-500">Access is limited to verified Google accounts.</p>
                         </form>
 
                         <div class="mt-6">
@@ -36,6 +36,7 @@
                                 </button>
                             </div>
                         </div>
+                        <p class="text-center text-xs text-gray-500"><a class="text-primary-600 hover:underline" href="terms.html">Terms and Conditions</a> <span aria-hidden="true">|</span> <a class="text-primary-600 hover:underline" href="privacy.html">Privacy Policy</a></p>
                     </div>
                 </div>
             `,
@@ -186,9 +187,9 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2 mb-6">
-                            <button onclick="UI.filterEvents('all')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-primary-600 text-white transition-colors" data-category="all">All Events</button>
+                            <button onclick="UI.filterEvents('all')" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-primary-600 text-white transition-colors" data-category="all">All Events</button>
                             ${categories.map(cat => `
-                                <button onclick="UI.filterEvents('${cat}')" class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-category="${cat}">${cat}</button>
+                                <button onclick="UI.filterEvents('${cat}')" class="filter-btn px-4 py-2 rounded-md text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors" data-category="${cat}">${cat}</button>
                             `).join('')}
                         </div>
 

@@ -97,9 +97,9 @@
             filterEvents: (category) => {
                 document.querySelectorAll('.filter-btn').forEach(btn => {
                     if (btn.dataset.category === category) {
-                        btn.className = 'filter-btn px-4 py-2 rounded-full text-sm font-medium transition-all bg-primary-600 text-white';
+                        btn.className = 'filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all bg-primary-600 text-white';
                     } else {
-                        btn.className = 'filter-btn px-4 py-2 rounded-full text-sm font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200';
+                        btn.className = 'filter-btn px-4 py-2 rounded-md text-sm font-medium transition-all bg-gray-100 text-gray-700 hover:bg-gray-200';
                     }
                 });
                 
@@ -239,7 +239,8 @@
                     details = {
                         phone: document.getElementById('mpesa-phone').value,
                         recipientNumber: Payment.mpesaRecipientNumber,
-                        recipientName: Store.currentUser ? Store.currentUser.name : 'Account holder'
+                        recipientName: Store.currentUser ? Store.currentUser.name : 'Account holder',
+                        reference: document.getElementById('mpesa-reference').value
                     };
                     if (!details.phone || details.phone.length < 9) {
                         Utils.showToast('Please enter a valid M-Pesa phone number', 'error');
@@ -250,6 +251,12 @@
                 }
                 
                 const result = await Payment.process(method, total, details);
+
+                if (result.pending) {
+                    UI.closePaymentModal();
+                    Utils.showToast(result.message || 'Check your phone to approve the M-Pesa payment. Your ticket will be issued after confirmation.', 'info');
+                    return;
+                }
                 
                 if (result.success) {
                     const event = Utils.getEventById(eventId);
